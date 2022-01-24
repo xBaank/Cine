@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class Fila extends ArrayList<Butaca>{
     private char letra;
+    
     public Fila(char letra,int size) {
         initialize(size);
         this.letra = letra;

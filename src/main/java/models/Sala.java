@@ -5,22 +5,50 @@ import java.util.List;
 
 public class Sala {
     private List<Fila> filas;
-    private static final int FILAS_SIZE = 9;
 
-    public Sala(int size) {
-        filas = new ArrayList<>(size);
-        initialize(size);
+    public Sala(int filasCount,int filasSize) {
+        filas = new ArrayList<>(filasCount);
+        initialize(filasCount,filasSize);
     }
-    protected void initialize(int size) {
+    protected void initialize(int filasCount,int filasSize) {
         char i = 'A';
         int j = 0;
-        while (j < size) {
-            filas.add(new Fila(i, FILAS_SIZE));
+        while (j < filasCount) {
+            filas.add(new Fila(i,filasSize));
             i++;j++;
         }
     }
 
     public List<Fila> getFilas() {
         return filas;
+    }
+
+    public int getAsientos(Estado estado) {
+        int result = 0;
+        for (var fila:filas) {
+           result += fila.stream().filter(i -> i.getEstado() == estado).count();
+        }
+        return result;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        int filaLength = filas.stream().findFirst().get().size();
+
+        result.append("  ");
+        for (int i = 0; i < filaLength; i++) {
+            result.append(i + 1).append(" ");
+        }
+        result.append("\n");
+        for (var fila: filas) {
+            result.append(fila.getLetra()).append(" ");
+            for (var butaca: fila) {
+                result.append(butaca.getEstado().toString().charAt(0)).append(" ");
+            }
+            result.append("\n");
+        }
+        return result.toString();
     }
 }
