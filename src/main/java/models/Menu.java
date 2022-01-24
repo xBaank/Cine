@@ -1,50 +1,93 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import exceptions.CanceledException;
+import utils.Input;
+
+import java.util.*;
 
 public class Menu {
     private MenuEstado estado = MenuEstado.MENU;
     private Cine cine;
     private Sala sala;
+    //Butacas reservadas por el usuario actual
     private List<Butaca> butacasReservadas = new ArrayList<>();
 
-    public void display(Cine cine) {
+    public Menu(Cine cine) {
         this.cine = cine;
+        display(cine);
+    }
 
+    private void display(Cine cine) {
         switch (estado) {
             case MENU:
                 displayMenu();
-                while (!readMenu(readInt())) {
-                    displayMessage("Opcion no valida");
+                try {
+                    while (!setMenu(Input.readInt())) {
+                        displayMessage("Opcion no valida");
+                    }
+                }
+                catch (CanceledException exception) {
+                    estado = MenuEstado.SALIR;
+                }
+                break;
+            case CANCELAR:
+                displayCancelar();
+                try {
+                    while (!cine.cancelTicket(Input.readInt())) {
+                        displayMessage("Ticket no encontrado");
+                    }
+                }
+                catch (CanceledException exception) {
+                    estado = MenuEstado.SALIR;
                 }
                 break;
             case CINE:
                 displaySalas(cine);
-                while (!readSala(readInt())) {
-                    displayMessage("La sala no esta presente");
+                try {
+                    while (!setSala(Input.readInt())) {
+                        displayMessage("La sala no esta presente");
+                    }
+                }
+                catch (CanceledException exception) {
+                    estado = MenuEstado.MENU;
                 }
                 break;
             case SALA:
                 diplayFilas(sala);
-                while (!readButaca(readCharWithInt())) {
-                    displayMessage("La butaca no esta presente");
+                try {
+                    while (!setButaca(Input.readButacaPos())) {
+                        displayMessage("La butaca no esta presente");
+                    }
+                }catch (CanceledException exception) {
+                    estado = MenuEstado.CINE;
                 }
                 break;
         }
+        //Mientras el estaado no sea salida crea un loop
         if(estado != MenuEstado.SALIR)
             display(cine);
     }
 
     private void displayMenu() {
+        System.out.println("0. Salir");
         System.out.println("1. Ver Salas");
-        System.out.println("2. Salir");
+        System.out.println("2. Cancelar compras");
+        if(butacasReservadas.size() > 0) {
+            System.out.println("3. Confirmar reservas");
+            System.out.println("4. Cancelar reservas");
+        }
+        estado = MenuEstado.MENU;
+    }
+
+    private void displayCancelar() {
+        System.out.println("Introduce 0 para volver atras");
+        System.out.println("Introduce el ticket de la compra: ");
         estado = MenuEstado.MENU;
     }
 
     private void displaySalas(Cine cine) {
         System.out.println(cine.toString());
+        System.out.println("Introduce 0 para volver atras");
         System.out.println("Selecciona una sala: ");
         estado = MenuEstado.CINE;
     }
@@ -60,52 +103,26 @@ public class Menu {
         System.out.println(message);
     }
 
-    private int readInt() {
-        Scanner scanner = new Scanner(System.in);
-        boolean isOk = false;
-        int result = 0;
-
-        while (!isOk){
-            try {
-                result = scanner.nextInt();
-                isOk = true;
-            }
-            catch (Exception ex) {
-                System.out.println("Character no valido en la entrada");
-                scanner.nextLine();
-            }
-        }
-        return result;
-    }
-
-    private String readCharWithInt() {
-        Scanner scanner = new Scanner(System.in);
-        boolean isOk = false;
-        String result = "";
-
-        while (!isOk){
-            try {
-                result = scanner.next();
-                if(Character.isDigit(result.charAt(0)) || !Character.isDigit(result.charAt(1)))
-                    throw new Exception();
-                isOk = true;
-            }
-            catch (Exception ex) {
-                System.out.println("Entrada no valida");
-                scanner.nextLine();
-            }
-        }
-        return result;
-    }
-
-    private boolean readMenu(int value) {
+    private boolean setMenu(int value) {
         switch (value) {
             case 1:
                 estado = MenuEstado.CINE;
                 break;
             case 2:
-                estado = MenuEstado.SALIR;
+                estado = MenuEstado.CANCELAR;
+            case 3:
+                if(butacasReservadas.size() == 0)
+                    return false;
+                else
+                    confirmarReserva();
                 break;
+            case 4:
+                if(butacasReservadas.size() == 0)
+                    return false;
+                else
+                    cancelarReserva();
+                break;
+
             default:
                 return false;
 
@@ -113,40 +130,50 @@ public class Menu {
         return true;
     }
 
-    private boolean readSala(int value) {
-        var salaOptional = cine.getSalas().stream().filter(i -> i.hashCode() == value).findFirst();
-        if(salaOptional.isPresent())
-        {
-            sala = salaOptional.get();
-            estado = MenuEstado.SALA;
-            return true;
-        }
-        else
-            return false;
+    private boolean setSala(int id) {
+        var searchedSala = cine.searchSala(id);
+        estado = MenuEstado.SALA;
+        return searchedSala != null;
     }
 
-    private boolean readButaca(String pos) {
-        char filaLetra = pos.charAt(0);
-        int columna = Character.getNumericValue(pos.charAt(1));
 
-        var filas = sala.getFilas();
-        var fila = filas.stream().filter(i -> i.getLetra() == filaLetra).findFirst();
+    private boolean setButaca(ButacaPos pos) {
+        char filaLetra = pos.getLetter();
+        int columna = pos.getColumn();
 
-        if(fila.isEmpty())
+        var butaca = sala.searchButaca(filaLetra,columna);
+
+        if(butaca == null)
             return false;
 
-        var butaca = fila.get().stream().filter(i -> fila.get().indexOf(i)+1 == columna).findFirst();
-
-        if(butaca.isPresent())
-        {
-            var butacaReservada = butaca.get();
-            butacasReservadas.add(butacaReservada);
-            butacaReservada.setEstado(Estado.RESERVADO);
-            estado = MenuEstado.SALA;
-            return true;
+        if(butaca.getEstado() != Estado.RESERVADO) {
+            butacasReservadas.add(butaca);
+            butaca.setEstado(Estado.RESERVADO);
         }
         else
-            return false;
+        {
+            butacasReservadas.remove(butaca);
+            butaca.setEstado(Estado.LIBRE);
+        }
+
+        estado = MenuEstado.SALA;
+        return true;
+
+    }
+
+    private void confirmarReserva() {
+        for (var butaca:butacasReservadas) {
+            butaca.setEstado(Estado.OCUPADO);
+        }
+        cine.addTicket(new Ticket(sala));
+        butacasReservadas.clear();
+    }
+
+    private void cancelarReserva() {
+        for (var butaca:butacasReservadas) {
+            butaca.setEstado(Estado.LIBRE);
+        }
+        butacasReservadas.clear();
     }
 
 

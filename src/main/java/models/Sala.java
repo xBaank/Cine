@@ -31,13 +31,24 @@ public class Sala {
         return result;
     }
 
+    public Butaca searchButaca(char filaLetra,int columna) {
+        var fila = getFilas().stream().filter(i -> i.getLetra() == filaLetra).findFirst();
+
+        if(fila.isEmpty())
+            return null;
+
+        var butaca = fila.get().stream().filter(i -> fila.get().indexOf(i)+1 == columna).findFirst();
+
+        return butaca.orElse(null);
+    }
+
 
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         int filaLength = filas.stream().findFirst().get().size();
 
-        result.append("  ");
+        result.append(" ");
         for (int i = 0; i < filaLength; i++) {
             result.append(i + 1).append(" ");
         }
