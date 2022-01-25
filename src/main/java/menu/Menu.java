@@ -1,6 +1,7 @@
-package models;
+package menu;
 
 import exceptions.CanceledException;
+import models.*;
 import utils.Input;
 
 import java.util.*;

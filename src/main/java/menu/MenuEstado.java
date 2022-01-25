@@ -1,4 +1,4 @@
-package models;
+package menu;
 
 public enum MenuEstado {
     CANCELAR,

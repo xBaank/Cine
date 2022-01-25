@@ -3,14 +3,15 @@ package models;
 import exceptions.CineException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class Cine {
     private List<Sala> salas;
     private List<Ticket> tickets = new ArrayList<>();
+    private float price;
 
-    public Cine (int salasCount,int filasCount,int filasSize)  {
+    public Cine (int salasCount,int filasCount,int filasSize,float price)  {
         if(salasCount <= 0)
             throw new CineException("Debe haber al menos 1 sala");
         if(filasCount <= 0)
@@ -18,7 +19,9 @@ public class Cine {
         if(filasSize <= 0)
             throw new CineException("Debe haber al menos 1 butaca por fila");
 
+
         salas = new ArrayList<>(salasCount);
+        setPrice(price);
         initialize(salasCount,filasCount,filasSize);
     }
 
@@ -28,8 +31,34 @@ public class Cine {
         }
     }
 
+    public float getPrice() {
+        return price;
+    }
+
+    public float getTakins() {
+        float result = 0;
+        for (Ticket ticket : tickets) {
+            result += ticket.getPrecio();
+        }
+        return result;
+    }
+
+    public void setPrice(float price) {
+        if(price <= 0)
+            throw new CineException("El precio debe ser mayor que 0");
+        this.price = price;
+    }
+
     public List<Sala> getSalas() {
         return salas;
+    }
+
+    public Ticket getTicket(int id) {
+        return tickets.stream().filter(i -> i.hashCode() == id).findFirst().orElse(null);
+    }
+
+    private void addTicket(Ticket ticket) {
+        tickets.add(ticket);
     }
 
     public Sala searchSala(int id) {
@@ -38,6 +67,12 @@ public class Cine {
     }
 
     public Ticket confirmarCompra(List<Butaca> butacas,Sala sala) {
+        if(butacas.size() == 0)
+            throw new CineException("La lista de butacas esta vacia");
+
+        if(sala == null)
+            throw new CineException("La lista de butacas esta vacia");
+
         for (var butaca:butacas) {
             butaca.setEstado(Estado.OCUPADO);
         }
@@ -47,25 +82,16 @@ public class Cine {
     }
 
     public void cancelarCompra(Ticket ticket) {
-        if(ticket == null)
+        if (ticket == null)
             throw new CineException("Ticket no puede ser nulo");
 
-        if(!tickets.contains(ticket))
+        if (!tickets.contains(ticket))
             throw new CineException("Ticket no existente");
 
-        for (var butaca:ticket.getButacas()) {
+        for (var butaca : ticket.getButacas()) {
             butaca.setEstado(Estado.LIBRE);
         }
         tickets.remove(ticket);
-    }
-
-    public Ticket getTicket(int id) {
-        return tickets.stream().filter(i -> i.hashCode() == id).findFirst().orElse(null);
-    }
-
-
-    private void addTicket(Ticket ticket) {
-        tickets.add(ticket);
     }
 
     @Override
