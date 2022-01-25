@@ -11,6 +11,13 @@ public class Cine {
     private List<Ticket> tickets = new ArrayList<>();
 
     public Cine (int salasCount,int filasCount,int filasSize)  {
+        if(salasCount <= 0)
+            throw new CineException("Debe haber al menos 1 sala");
+        if(filasCount <= 0)
+            throw new CineException("Debe haber al menos 1 fila");
+        if(filasSize <= 0)
+            throw new CineException("Debe haber al menos 1 butaca por fila");
+
         salas = new ArrayList<>(salasCount);
         initialize(salasCount,filasCount,filasSize);
     }
