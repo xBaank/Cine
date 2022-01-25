@@ -1,5 +1,7 @@
 package models;
 
+import exceptions.CineException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,20 +25,40 @@ public class Cine {
         return salas;
     }
 
-    public boolean cancelTicket(int id) {
-        Optional<Ticket> ticket = tickets.stream().filter(i -> i.hashCode() == id).findFirst();
-        if(ticket.isEmpty())
-            return false;
-        tickets.remove(ticket.get());
-        return true;
-    }
-    public void getTicket(int id) {}
-    public void addTicket(Ticket ticket) {
-        tickets.add(ticket);
-    }
     public Sala searchSala(int id) {
         var salaOptional = getSalas().stream().filter(i -> i.hashCode() == id).findFirst();
         return salaOptional.orElse(null);
+    }
+
+    public Ticket confirmarCompra(List<Butaca> butacas,Sala sala) {
+        for (var butaca:butacas) {
+            butaca.setEstado(Estado.OCUPADO);
+        }
+        var ticket = new Ticket(sala,butacas,1);
+        addTicket(ticket);
+        return ticket;
+    }
+
+    public void cancelarCompra(Ticket ticket) {
+        if(ticket == null)
+            throw new CineException("Ticket no puede ser nulo");
+
+        if(!tickets.contains(ticket))
+            throw new CineException("Ticket no existente");
+
+        for (var butaca:ticket.getButacas()) {
+            butaca.setEstado(Estado.LIBRE);
+        }
+        tickets.remove(ticket);
+    }
+
+    public Ticket getTicket(int id) {
+        return tickets.stream().filter(i -> i.hashCode() == id).findFirst().orElse(null);
+    }
+
+
+    private void addTicket(Ticket ticket) {
+        tickets.add(ticket);
     }
 
     @Override

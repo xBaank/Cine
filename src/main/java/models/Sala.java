@@ -48,7 +48,7 @@ public class Sala {
         StringBuilder result = new StringBuilder();
         int filaLength = filas.stream().findFirst().get().size();
 
-        result.append(" ");
+        result.append("  ");
         for (int i = 0; i < filaLength; i++) {
             result.append(i + 1).append(" ");
         }
