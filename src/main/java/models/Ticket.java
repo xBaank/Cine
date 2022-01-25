@@ -34,7 +34,7 @@ public class Ticket {
 
     @Override
     public String toString() {
-        return "Ticket \n" +
+        return "Ticket id: " + hashCode() + "\n" +
                 "sala=" + sala.hashCode() + "\n" +
                 "date=" + date + "\n" +
                 "precio=" + precio + "\n";
