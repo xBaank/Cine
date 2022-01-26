@@ -57,7 +57,7 @@ public class Menu {
                 diplayFilas(sala);
                 try {
                     while (!setButaca(Input.readButacaPos())) {
-                        displayMessage("La butaca no esta presente");
+                        displayMessage("La butaca no esta presente o ya esta ocupada");
                     }
                 }catch (CanceledException exception) {
                     estado = MenuEstado.CINE;
@@ -142,9 +142,10 @@ public class Menu {
         char filaLetra = pos.getLetter();
         int columna = pos.getColumn();
 
-        var butaca = sala.searchButaca(filaLetra,columna);
 
-        if(butaca == null)
+        var butaca = sala.searchButaca(filaLetra,columna-1);
+
+        if(butaca == null || butaca.getEstado() == Estado.OCUPADO)
             return false;
 
         if(butaca.getEstado() != Estado.RESERVADO) {
@@ -166,9 +167,9 @@ public class Menu {
         List<Ticket> tickets = new ArrayList<>();
         for(var salaButacas:butacasReservadas.entrySet()) {
             var ticket = cine.confirmarCompra(salaButacas.getValue(), salaButacas.getKey());
-            butacasReservadas = new Hashtable<>();
             tickets.add(ticket);
         }
+        butacasReservadas.clear();
         return tickets;
     }
 

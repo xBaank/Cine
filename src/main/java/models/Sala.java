@@ -37,9 +37,29 @@ public class Sala {
         if(fila.isEmpty())
             return null;
 
-        var butaca = fila.get().stream().filter(i -> fila.get().indexOf(i)+1 == columna).findFirst();
+        var butaca = fila.get().stream().filter(i -> fila.get().indexOf(i) == columna).findFirst();
 
         return butaca.orElse(null);
+    }
+    public Butaca searchButaca(ButacaPos butacaPos) {
+        return  searchButaca(butacaPos.getLetter(),butacaPos.getColumn());
+    }
+
+    public ButacaPos getButacaPos(Butaca butaca) {
+        char letter;
+        int column;
+
+        var fila = getFilas().stream().filter(i ->
+                i.stream().filter(b -> b == butaca).findFirst().orElse(null) != null).findFirst();
+
+        if(fila.isEmpty())
+            return null;
+        letter = fila.get().getLetra();
+
+        var butacaResult = fila.get().stream().filter(i -> i.equals(butaca)).findFirst();
+
+        column = fila.get().indexOf(butaca);
+        return new ButacaPos(letter,column);
     }
 
 

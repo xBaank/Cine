@@ -3,7 +3,6 @@ package models;
 import exceptions.CineException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Cine {
@@ -76,7 +75,7 @@ public class Cine {
         for (var butaca:butacas) {
             butaca.setEstado(Estado.OCUPADO);
         }
-        var ticket = new Ticket(sala,butacas,1);
+        var ticket = new Ticket(sala,butacas,getPrice());
         addTicket(ticket);
         return ticket;
     }
@@ -88,8 +87,8 @@ public class Cine {
         if (!tickets.contains(ticket))
             throw new CineException("Ticket no existente");
 
-        for (var butaca : ticket.getButacas()) {
-            butaca.setEstado(Estado.LIBRE);
+        for (var butacaPos : ticket.getButacasPos()) {
+            ticket.getSala().searchButaca(butacaPos).setEstado(Estado.LIBRE);
         }
         tickets.remove(ticket);
     }
